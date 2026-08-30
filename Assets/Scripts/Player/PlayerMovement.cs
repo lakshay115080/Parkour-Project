@@ -2,10 +2,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CapsuleCollider))]
 public class PlayerMovement : MonoBehaviour
 {
     Rigidbody rb;
     [Header("Speed Settings")]
+    [SerializeField] float crouchSpeed = 5f;
     [SerializeField] float walkSpeed = 10f;
     [SerializeField] float sprintSpeed = 15f;
     float playerSpeed;
@@ -24,22 +26,31 @@ public class PlayerMovement : MonoBehaviour
     bool isJumping;
     bool isGrounded;
 
+    [Header("Crouch Settings")]
+    [SerializeField] float standingHeight;
+    [SerializeField] float crouchingHeight;
+    CapsuleCollider capsule;
+    bool isCrouching;
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        capsule = GetComponent<CapsuleCollider>();
         Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Start()
     {
         vCam = Camera.main.transform;
+        standingHeight = capsule.height;
     }
 
     void Update()
     {
+        HandleSpeed();
         HandleLook();
-        HandleSprint();
         HandleJump();
+        HandleCrouch();
     }
 
     void FixedUpdate()
@@ -78,9 +89,13 @@ public class PlayerMovement : MonoBehaviour
         isSprinting = value.isPressed;
     }
 
-    private void HandleSprint()
+    private void HandleSpeed()
     {
-        if (isSprinting)
+        if (isCrouching)
+        {
+            playerSpeed = crouchSpeed;
+        }
+        else if (isSprinting)
         {
             playerSpeed = sprintSpeed;
         }
@@ -101,6 +116,23 @@ public class PlayerMovement : MonoBehaviour
         if (isGrounded && isJumping)
         {
             rb.AddForce(Vector3.up * jumpValue, ForceMode.Impulse);
+        }
+    }
+
+    private void OnCrouch(InputValue value)
+    {
+        isCrouching = value.isPressed;
+    }
+
+    private void HandleCrouch()
+    {
+        if (isCrouching)
+        {
+            capsule.height = crouchingHeight;
+        }
+        else
+        {
+            capsule.height = standingHeight;
         }
     }
 }
