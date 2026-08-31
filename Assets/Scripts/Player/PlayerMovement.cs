@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -32,6 +33,13 @@ public class PlayerMovement : MonoBehaviour
     CapsuleCollider capsule;
     bool isCrouching;
 
+    [Header("Slide Settings")]
+    [SerializeField] float slideValue;
+    [SerializeField] float slideDuration;
+    float slideTimer;
+    bool isSliding;
+
+    public event Action OnSlide;
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -51,6 +59,7 @@ public class PlayerMovement : MonoBehaviour
         HandleLook();
         HandleJump();
         HandleCrouch();
+        HandleSlide();
     }
 
     void FixedUpdate()
@@ -122,6 +131,11 @@ public class PlayerMovement : MonoBehaviour
     private void OnCrouch(InputValue value)
     {
         isCrouching = value.isPressed;
+        if (isSprinting && isCrouching)
+        {
+            isSliding = true;
+            slideTimer = 0;
+        }
     }
 
     private void HandleCrouch()
@@ -133,6 +147,21 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             capsule.height = standingHeight;
+        }
+    }
+
+    private void HandleSlide()
+    {
+        if (isSliding)
+        {
+            slideTimer += Time.deltaTime;
+            rb.AddForce(transform.forward * slideValue, ForceMode.Impulse);
+            OnSlide?.Invoke();
+            if (slideTimer >= slideDuration || !isCrouching)
+            {
+                slideTimer = 0;
+                isSliding = false;
+            }
         }
     }
 }
