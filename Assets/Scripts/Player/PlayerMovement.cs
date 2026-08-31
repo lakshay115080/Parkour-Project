@@ -24,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] GameObject groundCheck;
     [SerializeField] LayerMask groundLayer;
     [SerializeField] float checkRadius = 0.4f;
+    public bool canJump;
     bool isJumping;
     bool isGrounded;
 
@@ -45,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         capsule = GetComponent<CapsuleCollider>();
         Cursor.lockState = CursorLockMode.Locked;
+        canJump = true;
     }
 
     void Start()
@@ -74,10 +76,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMove()
     {
-        Vector3 currentPos = rb.position;
+        if (isSliding) return;
         Vector3 moveDirection = transform.forward * moveValue.y + transform.right * moveValue.x;
-        Vector3 newPos = currentPos + moveDirection * (playerSpeed * Time.fixedDeltaTime);
-        rb.MovePosition(newPos);
+        Vector3 velocity = rb.linearVelocity;
+        velocity.x = moveDirection.x * playerSpeed;
+        velocity.z = moveDirection.z * playerSpeed;
+
+        rb.linearVelocity = velocity;
     }
 
     private void OnLook(InputValue value)
@@ -100,11 +105,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleSpeed()
     {
-        if (isCrouching)
+        if (isCrouching && !isJumping)
         {
             playerSpeed = crouchSpeed;
         }
-        else if (isSprinting)
+        else if (isSprinting && isGrounded)
         {
             playerSpeed = sprintSpeed;
         }
@@ -122,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
     private void HandleJump()
     {
         isGrounded = Physics.CheckSphere(groundCheck.transform.position, checkRadius, groundLayer);
-        if (isGrounded && isJumping)
+        if (isGrounded && isJumping && canJump)
         {
             rb.AddForce(Vector3.up * jumpValue, ForceMode.Impulse);
         }
@@ -162,7 +167,7 @@ public class PlayerMovement : MonoBehaviour
                 slideTimer = 0;
                 isSliding = false;
 
-                rb.linearVelocity = new Vector3(0, 0, 0);
+                rb.linearVelocity = Vector3.zero;
             }
         }
     }
