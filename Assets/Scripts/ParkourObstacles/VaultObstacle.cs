@@ -6,6 +6,7 @@ public class VaultObstacle : ParkourObstacles
     BoxCollider boxCollider;
     [SerializeField] float vaultDistance = 2f;
     [SerializeField] float vaultDuration = 0.5f;
+    Animator animator;
     float vaultHeight;
     bool isVaulting;
 
@@ -26,6 +27,8 @@ public class VaultObstacle : ParkourObstacles
         isVaulting = true;
         playerMovement.enabled = false;
         Rigidbody rb = playerInField.GetComponent<Rigidbody>();
+        animator = playerInField.GetComponentInChildren<Animator>();
+        animator.SetTrigger("Vault");
         rb.isKinematic = true;
         Vector3 start = rb.position;
         Vector3 direction = (rb.position - transform.position).normalized;
