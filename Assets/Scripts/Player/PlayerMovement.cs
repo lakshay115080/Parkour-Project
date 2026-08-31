@@ -131,10 +131,12 @@ public class PlayerMovement : MonoBehaviour
     private void OnCrouch(InputValue value)
     {
         isCrouching = value.isPressed;
-        if (isSprinting && isCrouching)
+        if (isSprinting && isCrouching && !isSliding && isGrounded)
         {
             isSliding = true;
             slideTimer = 0;
+            rb.AddForce(transform.forward * slideValue, ForceMode.Impulse);
+            OnSlide?.Invoke();
         }
     }
 
@@ -155,12 +157,12 @@ public class PlayerMovement : MonoBehaviour
         if (isSliding)
         {
             slideTimer += Time.deltaTime;
-            rb.AddForce(transform.forward * slideValue, ForceMode.Impulse);
-            OnSlide?.Invoke();
             if (slideTimer >= slideDuration || !isCrouching)
             {
                 slideTimer = 0;
                 isSliding = false;
+
+                rb.linearVelocity = new Vector3(0, 0, 0);
             }
         }
     }
