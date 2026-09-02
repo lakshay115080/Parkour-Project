@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class VaultObstacle : ParkourObstacles
 {
-    BoxCollider boxCollider;
     [SerializeField] float vaultDistance = 2f;
     [SerializeField] float vaultDuration = 0.5f;
     Animator animator;
@@ -12,8 +11,7 @@ public class VaultObstacle : ParkourObstacles
 
     void Awake()
     {
-        boxCollider = GetComponent<BoxCollider>();
-        vaultHeight = boxCollider.size.y + 0.5f;
+        vaultHeight = gameObject.transform.localScale.y + 0.5f;
     }
     protected override void Parkour()
     {
